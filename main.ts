@@ -1,8 +1,8 @@
-import {Editor, Plugin} from 'obsidian';
-import {BibleLinkModal, LogosLink} from './src/ui/bible-link-modal';
-import {DEFAULT_SETTINGS, LogosLinkSettings, LogosLinkSettingTab} from './src/ui/settings';
-import {Messages} from "./src/messages/messages";
-import {logosLinksToMarkdown} from "./src/parsers/bible-reference-markdown-utils";
+import { Editor, Plugin } from "obsidian";
+import { BibleLinkModal, LogosLink } from "./src/ui/bible-link-modal";
+import { DEFAULT_SETTINGS, LogosLinkSettings, LogosLinkSettingTab } from "./src/ui/settings";
+import { Messages } from "./src/messages/messages";
+import { logosLinksToMarkdown } from "./src/parsers/bible-reference-markdown-utils";
 
 export default class LogosLinkPlugin extends Plugin {
 	settings: LogosLinkSettings;
@@ -13,16 +13,29 @@ export default class LogosLinkPlugin extends Plugin {
 		// add a settings tab to set up the plugin
 		this.addSettingTab(new LogosLinkSettingTab(this.app, this));
 
+		// add command for command palette
+		this.addCommand({
+			id: "create-logos-link",
+			name: Messages.create_logos_link(),
+			icon: "link-2",
+			editorCallback: (editor: Editor) => {
+				const selectedText = editor.getSelection();
+				this.openBibleLinkModal(editor, selectedText);
+			},
+		});
+
 		// register context-menu for editor
 		this.registerEvent(
-			this.app.workspace.on('editor-menu', (menu, editor) => {
+			this.app.workspace.on("editor-menu", (menu, editor) => {
 				const selectedText = editor.getSelection();
 				menu.addItem((item) => {
-					item.setTitle(selectedText ? Messages.link_with_logos() : Messages.create_logos_link());
-					item.setIcon('link');
+					item.setTitle(
+						selectedText ? Messages.link_with_logos() : Messages.create_logos_link(),
+					);
+					item.setIcon("link-2");
 					item.onClick(() => this.openBibleLinkModal(editor, selectedText));
 				});
-			})
+			}),
 		);
 	}
 
@@ -42,8 +55,8 @@ export default class LogosLinkPlugin extends Plugin {
 		const modal = new BibleLinkModal(
 			this.app,
 			selectedText,
-			enabledLanguages.length > 0 ? enabledLanguages : ['en'],
-			(links: LogosLink[]) => this.insertBibleLinks(editor, links)
+			enabledLanguages.length > 0 ? enabledLanguages : ["en"],
+			(links: LogosLink[]) => this.insertBibleLinks(editor, links),
 		);
 		modal.open();
 	}
