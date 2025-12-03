@@ -1,7 +1,10 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "logos-link",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This plugin makes using Logos together with Obsidian simpler.",
+	"author": "David Troyer",
+	"license": "MIT",
+	"keywords": ["Logos", "Link", "Bible", "Passage"],
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -10,9 +13,9 @@
 		"test": "jest",
 		"test:watch": "jest --watch"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
+	"prettier": {
+		"printWidth": 100
+	},
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
 		"@types/node": "^16.11.6",
