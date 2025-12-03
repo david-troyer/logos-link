@@ -1,4 +1,4 @@
-import {Editor, Plugin} from 'obsidian';
+import {Editor, MarkdownView, Plugin} from 'obsidian';
 import {BibleLinkModal, LogosLink} from './src/ui/bible-link-modal';
 import {DEFAULT_SETTINGS, LogosLinkSettings, LogosLinkSettingTab} from './src/ui/settings';
 import {Messages} from "./src/messages/messages";
@@ -13,13 +13,25 @@ export default class LogosLinkPlugin extends Plugin {
 		// add a settings tab to set up the plugin
 		this.addSettingTab(new LogosLinkSettingTab(this.app, this));
 
+		// add command for command palette
+		this.addCommand({
+			id: 'create-logos-link',
+			name: Messages.create_logos_link(),
+			icon: 'link-2',
+			editorCallback: (editor: Editor) => {
+				const selectedText = editor.getSelection();
+				this.openBibleLinkModal(editor, selectedText);
+			},
+		});
+
+
 		// register context-menu for editor
 		this.registerEvent(
 			this.app.workspace.on('editor-menu', (menu, editor) => {
 				const selectedText = editor.getSelection();
 				menu.addItem((item) => {
 					item.setTitle(selectedText ? Messages.link_with_logos() : Messages.create_logos_link());
-					item.setIcon('link');
+					item.setIcon('link-2');
 					item.onClick(() => this.openBibleLinkModal(editor, selectedText));
 				});
 			})
@@ -50,5 +62,10 @@ export default class LogosLinkPlugin extends Plugin {
 
 	private insertBibleLinks(editor: Editor, links: LogosLink[]) {
 		editor.replaceSelection(logosLinksToMarkdown(links));
+	}
+
+	private getActiveEditor(): Editor | null {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		return activeView?.editor || null;
 	}
 }
