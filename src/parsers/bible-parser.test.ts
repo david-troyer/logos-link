@@ -27,8 +27,32 @@ describe("Bible Parser", () => {
 			expected: [{ reference: "Rom1-2", displayText: "Römer 1-2" }],
 		},
 		{
+			input: "Römer 1–2",
+			expected: [{ reference: "Rom1-2", displayText: "Römer 1–2" }],
+		},
+		{
+			input: "Römer 1  -  2",
+			expected: [{ reference: "Rom1-2", displayText: "Römer 1  -  2" }],
+		},
+		{
+			input: "Römer 1  –  2",
+			expected: [{ reference: "Rom1-2", displayText: "Römer 1  –  2" }],
+		},
+		{
 			input: "Römer 1,20",
 			expected: [{ reference: "Rom1.20", displayText: "Römer 1,20" }],
+		},
+		{
+			input: "Römer 1:20",
+			expected: [{ reference: "Rom1.20", displayText: "Römer 1:20" }],
+		},
+		{
+			input: "  Römer 1  ,  20  ",
+			expected: [{ reference: "Rom1.20", displayText: "  Römer 1  ,  20  " }],
+		},
+		{
+			input: "  Römer 1  :  20  ",
+			expected: [{ reference: "Rom1.20", displayText: "  Römer 1  :  20  " }],
 		},
 		{
 			input: "Römer 1,20-25",
@@ -37,9 +61,57 @@ describe("Bible Parser", () => {
 			],
 		},
 		{
+			input: "Römer 1:20-25",
+			expected: [
+				{ reference: "Rom1.20-25", displayText: "Römer 1:20-25" },
+			],
+		},
+		{
+			input: "Römer 1,20–25",
+			expected: [
+				{ reference: "Rom1.20-25", displayText: "Römer 1,20–25" },
+			],
+		},
+		{
+			input: "Römer 1  ,  20  –  25",
+			expected: [
+				{ reference: "Rom1.20-25", displayText: "Römer 1  ,  20  –  25" },
+			],
+		},
+		{
+			input: "  Römer 1  :  20  -  25  ",
+			expected: [
+				{ reference: "Rom1.20-25", displayText: "  Römer 1  :  20  -  25  " },
+			],
+		},
+		{
 			input: "Römer 1,20-2,1",
 			expected: [
 				{ reference: "Rom1.20-2.1", displayText: "Römer 1,20-2,1" },
+			],
+		},
+		{
+			input: "Römer 1:20-2:1",
+			expected: [
+				{ reference: "Rom1.20-2.1", displayText: "Römer 1:20-2:1" },
+			],
+		},
+		{
+			input: "Römer 1:20–2:1",
+			expected: [
+				{ reference: "Rom1.20-2.1", displayText: "Römer 1:20–2:1" },
+			],
+		},
+		{
+			input: "Römer 1,20-2:1",
+			expected: [
+				{ reference: "Rom1.20-2.1", displayText: "Römer 1,20-2:1" },
+			],
+		},
+		{
+			input: "  Römer 1  ,  20  -  2  ,  1  ",
+			expected: [
+				{ reference: "Rom1.20-2.1", displayText: "  Römer 1  ,  20  -  2  ,  1  " },
 			],
 		},
 		{
@@ -62,11 +134,51 @@ describe("Bible Parser", () => {
 			],
 		},
 		{
+			input: "Römer 1,10-14.18+20-26",
+			expected: [
+				{ reference: "Rom1.10-14", displayText: "Römer 1,10-14" },
+				{ reference: "Rom1.18", displayText: ".18" },
+				{ reference: "Rom1.20-26", displayText: "+20-26" },
+			],
+		},
+		{
+			input: "Römer 1,10-14+18+20–26",
+			expected: [
+				{ reference: "Rom1.10-14", displayText: "Römer 1,10-14" },
+				{ reference: "Rom1.18", displayText: "+18" },
+				{ reference: "Rom1.20-26", displayText: "+20–26" },
+			],
+		},
+		{
+			input: "  Römer  1,10  -  14  +  18  .  20  -  26  ",
+			expected: [
+				{ reference: "Rom1.10-14", displayText: "  Römer  1,10  -  14  " },
+				{ reference: "Rom1.18", displayText: "+  18  " },
+				{ reference: "Rom1.20-26", displayText: ".  20  -  26  " },
+			],
+		},
+		{
 			input: "Römer 1,10-14.18; 2,15",
 			expected: [
 				{ reference: "Rom1.10-14", displayText: "Römer 1,10-14" },
 				{ reference: "Rom1.18", displayText: ".18" },
 				{ reference: "Rom2.15", displayText: "; 2,15" },
+			],
+		},
+		{
+			input: "Römer 1,10-14.18; 2:15",
+			expected: [
+				{ reference: "Rom1.10-14", displayText: "Römer 1,10-14" },
+				{ reference: "Rom1.18", displayText: ".18" },
+				{ reference: "Rom2.15", displayText: "; 2:15" },
+			],
+		},
+		{
+			input: "  Römer  1  :  10  -  14  .  18  ;  2  ,  15  ",
+			expected: [
+				{ reference: "Rom1.10-14", displayText: "  Römer  1  :  10  -  14  " },
+				{ reference: "Rom1.18", displayText: ".  18  " },
+				{ reference: "Rom2.15", displayText: ";  2  ,  15  " },
 			],
 		},
 		{
