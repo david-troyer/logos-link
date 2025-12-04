@@ -1,4 +1,4 @@
-import { AvailableLanguage, BIBLE_DATA, BibleBook } from "../data/bible-structure";
+import { AvailableLanguage, BIBLE_DATA, BibleBook } from '../data/bible-structure';
 
 export type BibleReference = {
 	bookId: string;
@@ -38,7 +38,7 @@ export const formatBibleReferenceForLogos = (reference: BibleReference): string 
 	}
 	const formattedBook = reference.bookId;
 	const formattedChapter = reference.chapter;
-	const formattedVerse = reference.verse !== undefined ? `.${reference.verse}` : "";
+	const formattedVerse = reference.verse !== undefined ? `.${reference.verse}` : '';
 	const formattedFrom = `${formattedBook}${formattedChapter}${formattedVerse}`;
 	if (reference.to !== undefined) {
 		const chapter2 =
@@ -96,7 +96,7 @@ export const parseBibleReferences = (
 			mainPart ?? segment.fullSegmentText,
 			enabledLanguages,
 			lastBookId ?? undefined,
-			"book-optional",
+			'book-optional',
 		);
 
 		if (mainLinkParsed) {
@@ -121,14 +121,14 @@ export const parseSingleBibleReference = (
 	text: string,
 	enabledLanguages: AvailableLanguage[],
 	lastBookId?: string,
-	mode: "requires-book" | "no-book" | "book-optional" = "book-optional",
+	mode: 'requires-book' | 'no-book' | 'book-optional' = 'book-optional',
 ): BibleReference | null => {
-	const normalizeText = text.replace(";", "").trim();
+	const normalizeText = text.replace(';', '').trim();
 	let reference: BibleReference | null = null;
-	if (mode !== "no-book") {
+	if (mode !== 'no-book') {
 		reference = parseSingleBibleReferenceWithBook(normalizeText, text, enabledLanguages);
 	}
-	if (mode !== "requires-book" && !reference) {
+	if (mode !== 'requires-book' && !reference) {
 		reference = parseSingleBibleReferenceWithoutBook(normalizeText, text, lastBookId);
 	}
 	return reference;
@@ -136,7 +136,7 @@ export const parseSingleBibleReference = (
 
 const findBibleBook = (text: string, enabledLanguages: AvailableLanguage[]): BibleBook | null => {
 	// normalize the text (remove unnecessary spaces)
-	const normalizedText = text.trim().replace(/\s+/g, " ");
+	const normalizedText = text.trim().replace(/\s+/g, ' ');
 
 	// search through all available languages
 	for (const langCode of enabledLanguages) {
@@ -161,7 +161,7 @@ const splitIntoSegments = (text: string): Segment[] => {
 	const segments: Segment[] = [];
 	let lastIndex: number | undefined = undefined;
 	for (let i = 0; i < text.length; i++) {
-		if (text[i] === ";") {
+		if (text[i] === ';') {
 			segments.push(createSegment(text, lastIndex, i));
 			lastIndex = i;
 		}
@@ -209,7 +209,7 @@ const parseDisconnectedVerses = (
 	let lastSeparatorIndex = 0;
 	for (let i = 0; i < disconnectedVerses.length; i++) {
 		const character = disconnectedVerses[i];
-		if (i > 0 && (character === "." || character === "+")) {
+		if (i > 0 && (character === '.' || character === '+')) {
 			parts.push(disconnectedVerses.substring(lastSeparatorIndex, i));
 			lastSeparatorIndex = i;
 		}
