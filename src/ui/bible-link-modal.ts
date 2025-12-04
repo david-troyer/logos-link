@@ -39,16 +39,13 @@ export class BibleLinkModal extends Modal {
 		private onSubmit: (links: LogosLink[]) => void,
 	) {
 		super(app);
+		this.setTitle(Messages.create_logos_link())
 	}
 
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('logos-link-modal');
-		contentEl.createEl('h3', {
-			text: Messages.create_logos_link(),
-			cls: 'logos-link-modal__header',
-		});
 
 		// Mode Toggle (auto / manual)
 		const modeButtonGroup = contentEl.createDiv('logos-link-modal__mode-button-group');

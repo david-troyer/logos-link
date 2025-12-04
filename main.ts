@@ -16,7 +16,7 @@ export default class LogosLinkPlugin extends Plugin {
 		// add command for command palette
 		this.addCommand({
 			id: 'create-logos-link',
-			name: 'Create Logos-Link',
+			name: 'Create link',
 			icon: 'link-2',
 			editorCallback: (editor: Editor) => {
 				const selectedText = editor.getSelection();

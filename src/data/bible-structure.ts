@@ -482,7 +482,7 @@ const BibleEnglish: Bible = {
 				{
 					id: 'Son',
 					shortName: 'Song',
-					name: /^(?:Song(?: of (?:Solomon|Songs))|SOS|So)$/i,
+					name: /^(?:Song(?:\s+of\s+(?:Solomon|Songs))?|SOS|So)$/i,
 				},
 				{
 					id: 'Isa',
