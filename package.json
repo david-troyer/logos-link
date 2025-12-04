@@ -1,7 +1,7 @@
 {
 	"name": "logos-link",
-	"version": "1.0.0",
-	"description": "This plugin makes using Logos together with Obsidian simpler.",
+	"version": "1.1.1",
+	"description": "Make linking to Logos Bible Software easy.",
 	"author": "David Troyer",
 	"license": "MIT",
 	"keywords": ["Logos", "Link", "Bible", "Passage"],

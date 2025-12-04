@@ -10,7 +10,7 @@ export const Messages = {
 			case 'de':
 				return 'Mit Logos verlinken';
 			default:
-				return 'Link with Logos'
+				return 'Link to Logos'
 		}
 	},
 	add_link_to_logos: () => {
