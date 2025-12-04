@@ -1,13 +1,14 @@
-.bible-link-mode-container {
+.logos-link-modal__header {
+	margin-top: 0;
+}
+
+.logos-link-modal__mode-button-group {
+	display: flex;
+	gap: 0.5rem;
 	margin-bottom: 1rem;
 }
 
-.bible-link-button-group {
-	display: flex;
-	gap: 0.5rem;
-}
-
-.bible-link-button-group button {
+.logos-link-modal__mode-button-group button {
 	flex: 1;
 	padding: 0.5rem 1rem;
 	background: var(--background-secondary);
@@ -15,24 +16,24 @@
 	transition: all 0.2s ease;
 }
 
-.bible-link-button-group button:hover {
+.logos-link-modal__mode-button-group button:hover {
 	background: var(--background-modifier-hover);
 }
 
-.bible-link-button-group button.mod-cta {
+.logos-link-modal__mode-button-group button.mod-cta {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
 }
 
-.bible-link-button-container {
+.logos-link-modal__button-container {
 	display: flex;
 	justify-content: flex-end;
 	gap: 0.5rem;
 	margin-top: 1rem;
 }
 
-.bible-link-button-container button {
+.logos-link-modal__button-container button {
 	padding: 0.5rem 1rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
@@ -41,93 +42,78 @@
 	transition: all 0.2s ease;
 }
 
-.bible-link-button-container button:hover {
+.logos-link-modal__button-container button:hover {
 	background: var(--background-modifier-hover);
 }
 
-.bible-link-button-container button.mod-cta {
+.logos-link-modal__button-container button.mod-cta {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
 }
 
-.bible-link-button-container button:disabled {
+.logos-link-modal__button-container button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 
-.bible-link-modal input[readonly],
-.bible-link-modal input:disabled {
-	background-color: var(--background-modifier-form-field-disabled, var(--background-modifier-border)) !important;
+.logos-link-modal input[readonly],
+.logos-link-modal input:disabled {
+	background-color: var(--background-modifier-form-field-disabled, var(--background-modifier-border));
 	cursor: not-allowed;
 	opacity: 0.7;
 }
 
-.bible-link-modal input.bible-link-input-error {
-	border-color: var(--text-error) !important;
-	border-width: 1px !important;
-	box-shadow: 0 0 0 2px var(--background-modifier-error);
+.logos-link-modal input.input-error {
+	border-color: var(--text-error);
+	border-width: 1px;
 }
 
-.bible-link-tuples-container {
+.logos-link-tuples-container {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 	margin-bottom: 0.5rem;
 }
 
-.bible-link-tuple {
+.logos-link-tuple {
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
 	padding: 1rem;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
-	background: var(--background-secondary);
 	position: relative;
 }
 
-.bible-link-tuple-display {
-	flex: 1;
-	padding: 0.5rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	background: var(--background-primary);
-}
-
-.bible-link-tuple-display-input-container {
-	display: flex;
-	gap: 8px;
-}
-
-.bible-link-tuple-reference {
+.logos-link-tuple__display-text-input {
 	flex: 1;
 }
 
-.bible-link-remove-button {
+.logos-link-tuple__reference-input {
+	flex: 1;
+}
+
+.logos-link-tuple__remove-button {
 	padding: 0.25rem 0.5rem;
 	cursor: pointer;
 }
 
-.bible-link-remove-button:hover {
+.logos-link-tuple__remove-button:hover {
 	background: var(--background-modifier-error-hover);
 	color: var(--text-on-accent);
 }
 
-.bible-link-add-button-container {
-	margin-top: 0.5rem;
-	margin-bottom: 1rem;
-}
-
-.bible-link-add-button {
+.logos-link-tuple__add-button {
 	width: 100%;
 	padding: 0.5rem 1rem;
 	background: var(--background-secondary);
 	cursor: pointer;
 	transition: all 0.2s ease;
+	margin-top: 0.5rem;
+	margin-bottom: 1rem;
 }
 
-.bible-link-add-button:hover {
+.logos-link-tuple__add-button:hover {
 	background: var(--background-modifier-hover);
 }
 

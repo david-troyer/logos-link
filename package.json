@@ -1,10 +1,15 @@
 {
 	"name": "logos-link",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Make linking to Logos Bible Software easy.",
 	"author": "David Troyer",
 	"license": "MIT",
-	"keywords": ["Logos", "Link", "Bible", "Passage"],
+	"keywords": [
+		"Logos",
+		"Link",
+		"Bible",
+		"Passage"
+	],
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -14,7 +19,8 @@
 		"test:watch": "jest --watch"
 	},
 	"prettier": {
-		"printWidth": 100
+		"printWidth": 100,
+		"singleQuote": true
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.14",

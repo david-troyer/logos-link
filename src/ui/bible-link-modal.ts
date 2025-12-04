@@ -1,7 +1,11 @@
-import {App, Modal, setIcon, Setting} from 'obsidian';
-import {BibleReference, formatBibleReferenceForLogos, parseBibleReferences} from '../parsers/bible-parser';
-import {AvailableLanguage} from "../data/bible-structure";
-import {Messages} from "../messages/messages";
+import { App, Modal, setIcon, Setting } from 'obsidian';
+import {
+	BibleReference,
+	formatBibleReferenceForLogos,
+	parseBibleReferences,
+} from '../parsers/bible-parser';
+import { AvailableLanguage } from '../data/bible-structure';
+import { Messages } from '../messages/messages';
 
 export interface LogosLink {
 	displayText: string;
@@ -14,45 +18,49 @@ interface LinkTuple {
 	container: HTMLElement;
 }
 
-const INPUT_INVALID_CLASS = 'bible-link-input-error';
+const INPUT_INVALID_CLASS = 'input-error';
 
 export class BibleLinkModal extends Modal {
 	// auto-mode
 	private autoDisplayTextInput: HTMLInputElement | null = null;
 	private autoReferenceInput: HTMLInputElement | null = null;
-	
+
 	// manual-mode
 	private manualTuples: LinkTuple[] = [];
 	private manualTuplesContainer: HTMLElement | null = null;
-	
+
 	private modeToggle: 'auto' | 'manual' = 'auto';
 	private parsedReferences: BibleReference[] = [];
 
-	constructor(app: App,
-				private initialText: string = '',
-				private enabledLanguages: AvailableLanguage[],
-				private onSubmit: (links: LogosLink[]) => void) {
+	constructor(
+		app: App,
+		private initialText: string = '',
+		private enabledLanguages: AvailableLanguage[],
+		private onSubmit: (links: LogosLink[]) => void,
+	) {
 		super(app);
 	}
 
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass('bible-link-modal');
-		contentEl.createEl('h2', { text: Messages.create_logos_link() });
+		contentEl.addClass('logos-link-modal');
+		contentEl.createEl('h3', {
+			text: Messages.create_logos_link(),
+			cls: 'logos-link-modal__header',
+		});
 
 		// Mode Toggle (auto / manual)
-		const modeContainer = contentEl.createDiv('bible-link-mode-container');
-		const buttonGroup = modeContainer.createDiv('bible-link-button-group');
-		
-		const autoButton = buttonGroup.createEl('button', {
+		const modeButtonGroup = contentEl.createDiv('logos-link-modal__mode-button-group');
+
+		const autoButton = modeButtonGroup.createEl('button', {
 			text: Messages.auto_mode(),
-			cls: this.modeToggle === 'auto' ? 'mod-cta' : ''
+			cls: this.modeToggle === 'auto' ? 'mod-cta' : '',
 		});
-		
-		const manualButton = buttonGroup.createEl('button', {
+
+		const manualButton = modeButtonGroup.createEl('button', {
 			text: Messages.manual_mode(),
-			cls: this.modeToggle === 'manual' ? 'mod-cta' : ''
+			cls: this.modeToggle === 'manual' ? 'mod-cta' : '',
 		});
 
 		autoButton.onclick = () => {
@@ -64,7 +72,10 @@ export class BibleLinkModal extends Modal {
 
 		manualButton.onclick = () => {
 			if (this.modeToggle === 'auto' && this.autoDisplayTextInput) {
-				this.parsedReferences = parseBibleReferences(this.autoDisplayTextInput.value, this.enabledLanguages);
+				this.parsedReferences = parseBibleReferences(
+					this.autoDisplayTextInput.value,
+					this.enabledLanguages,
+				);
 			}
 
 			this.modeToggle = 'manual';
@@ -78,48 +89,46 @@ export class BibleLinkModal extends Modal {
 
 	private renderContent() {
 		const { contentEl } = this;
-		
+
 		// re-create content when calling this render function -> therefore remove old
 		contentEl.querySelector('.bible-link-content')?.remove();
-		contentEl.querySelector('.bible-link-button-container')?.remove();
+		contentEl.querySelector('.logos-link-modal__button-container')?.remove();
 
-		const contentContainer = contentEl.createDiv('bible-link-content');
+		const contentContainer = contentEl.createDiv('logos-link-modal__content');
 		if (this.modeToggle === 'auto') {
 			this.renderAutoMode(contentContainer);
 		} else {
 			this.renderManualMode(contentContainer);
 		}
 
-		const buttonContainer = contentEl.createDiv('bible-link-button-container');
+		const buttonContainer = contentEl.createDiv('logos-link-modal__button-container');
 		const cancelButton = buttonContainer.createEl('button', { text: Messages.cancel() });
 		cancelButton.onclick = () => this.close();
 
 		const createButton = buttonContainer.createEl('button', {
 			text: Messages.create_link(),
-			cls: 'mod-cta'
+			cls: 'mod-cta',
 		});
 		createButton.onclick = () => this.onClickCreate();
-		
+
 		this.updateCreateButtonState();
 	}
 
 	private renderAutoMode(container: HTMLElement) {
-		new Setting(container)
-			.setName(Messages.passage_input_auto_name())
-			.addText(text => {
-				this.autoDisplayTextInput = text.inputEl;
-				text.setPlaceholder(Messages.passage_input_auto_placeholder());
-				if (this.initialText) {
-					text.setValue(this.initialText);
-				}
-				text.inputEl.addEventListener('input', () => this.updateAutoMode());
-			});
+		new Setting(container).setName(Messages.passage_input_auto_name()).addText((text) => {
+			this.autoDisplayTextInput = text.inputEl;
+			text.setPlaceholder(Messages.passage_input_auto_placeholder());
+			if (this.initialText) {
+				text.setValue(this.initialText);
+			}
+			text.inputEl.addEventListener('input', () => this.updateAutoMode());
+		});
 		new Setting(container)
 			.setName(Messages.link_text_input_name())
 			.setDesc(Messages.link_text_input_description())
-			.addText(text => {
+			.addText((text) => {
 				this.autoReferenceInput = text.inputEl;
-				text.setPlaceholder(Messages.passage_format_invalid())
+				text.setPlaceholder(Messages.passage_format_invalid());
 				text.inputEl.disabled = true;
 				text.inputEl.readOnly = true;
 			});
@@ -131,30 +140,33 @@ export class BibleLinkModal extends Modal {
 		if (!this.autoDisplayTextInput || !this.autoReferenceInput) {
 			return;
 		}
-		this.parsedReferences = parseBibleReferences(this.autoDisplayTextInput.value.trim(), this.enabledLanguages);
-		this.autoReferenceInput.value = this.parsedReferences.map(formatBibleReferenceForLogos).join('; ');
+		this.parsedReferences = parseBibleReferences(
+			this.autoDisplayTextInput.value.trim(),
+			this.enabledLanguages,
+		);
+		this.autoReferenceInput.value = this.parsedReferences
+			.map(formatBibleReferenceForLogos)
+			.join('; ');
 		this.updateCreateButtonState();
 	}
 
 	private renderManualMode(container: HTMLElement) {
-		this.manualTuplesContainer = container.createDiv('bible-link-tuples-container');
+		this.manualTuplesContainer = container.createDiv('logos-link-tuples-container');
 		if (this.parsedReferences.length > 0) {
 			for (const ref of this.parsedReferences) {
 				this.addManualTuple(
 					ref.displayText || formatBibleReferenceForLogos(ref),
-					formatBibleReferenceForLogos(ref)
+					formatBibleReferenceForLogos(ref),
 				);
 			}
 		} else {
 			// add empty tuple if list is empty
 			this.addManualTuple('', '');
 		}
-		
 
-		const addButtonContainer = container.createDiv('bible-link-add-button-container');
-		const addButton = addButtonContainer.createEl('button', {
+		const addButton = container.createEl('button', {
 			text: `+ ${Messages.add_button_text()}`,
-			cls: 'bible-link-add-button'
+			cls: 'logos-link-tuple__add-button',
 		});
 		addButton.onclick = () => {
 			this.addManualTuple('', '');
@@ -164,62 +176,69 @@ export class BibleLinkModal extends Modal {
 
 	private addManualTuple(displayText: string, reference: string) {
 		if (!this.manualTuplesContainer) return;
-		
-		const tupleContainer = this.manualTuplesContainer.createDiv('bible-link-tuple');
-		
-        const displayTextInputContainer = tupleContainer.createDiv('bible-link-tuple-display-input-container');
-		const displayTextInput = displayTextInputContainer.createEl('input', {
-			type: 'text',
-			placeholder: Messages.passage_input_manual_name(),
-			value: displayText
-		});
-		displayTextInput.addClass('bible-link-tuple-display');
-		
-		const referenceInput = tupleContainer.createDiv('bible-link-tuple-reference');
+
+		const tupleContainer = this.manualTuplesContainer.createDiv('logos-link-tuple');
+
+		const displayTextInput = tupleContainer.createDiv('logos-link-tuple__display-text-input');
+
+		new Setting(displayTextInput)
+			.setName(Messages.passage_input_manual_name())
+			.addText((text) => {
+				text.setValue(displayText);
+				text.inputEl.addEventListener('input', () => this.updateCreateButtonState());
+			});
+
+		const referenceInput = tupleContainer.createDiv('logos-link-tuple__reference-input');
 		new Setting(referenceInput)
 			.setName(Messages.link_text_input_name())
 			.setDesc(Messages.link_text_input_description())
-			.addText(text => {
+			.addText((text) => {
 				text.setPlaceholder(Messages.link_text_input_placeholder());
 				text.setValue(reference);
 				text.inputEl.addEventListener('input', () => this.updateCreateButtonState());
 			});
-		
-		const removeButton = displayTextInputContainer.createEl('button', {
+
+		const removeButton = tupleContainer.createEl('button', {
 			text: Messages.delete(),
-			cls: 'bible-link-remove-button'
+			cls: 'logos-link-tuple__remove-button',
 		});
-        setIcon(removeButton, 'trash-2');
+		setIcon(removeButton, 'trash-2');
 
 		removeButton.onclick = () => {
 			tupleContainer.remove();
-			this.manualTuples = this.manualTuples.filter(t => t.container !== tupleContainer);
+			this.manualTuples = this.manualTuples.filter((t) => t.container !== tupleContainer);
 			this.updateCreateButtonState();
 		};
-		
+
 		this.manualTuples.push({
-			displayTextInput: displayTextInput,
+			displayTextInput: displayTextInput.querySelector('input') as HTMLInputElement,
 			referenceInput: referenceInput.querySelector('input') as HTMLInputElement,
-			container: tupleContainer
+			container: tupleContainer,
 		});
 	}
 
 	private updateCreateButtonState() {
-		const createButton = this.contentEl.querySelector('.bible-link-button-container button.mod-cta') as HTMLButtonElement;
+		const createButton = this.contentEl.querySelector(
+			'.bible-link-button-container button.mod-cta',
+		) as HTMLButtonElement;
 		if (createButton) {
 			const validationResult = this.validate();
 			createButton.disabled = !validationResult.valid;
-			// TODO: show reason
 		}
 	}
 
 	private validate(): { valid: true; message?: never } | { valid: false; message: string } {
 		if (this.modeToggle === 'auto') {
 			if (this.autoDisplayTextInput && this.autoReferenceInput) {
-				const parsedReferences = parseBibleReferences(this.autoDisplayTextInput.value, this.enabledLanguages);
+				const parsedReferences = parseBibleReferences(
+					this.autoDisplayTextInput.value,
+					this.enabledLanguages,
+				);
 				const valid = parsedReferences.length > 0;
 				setInputValidationState(this.autoDisplayTextInput, valid);
-				return valid ? { valid } : { valid, message: Messages.passage_not_formatted_correctly()}
+				return valid
+					? { valid }
+					: { valid, message: Messages.passage_not_formatted_correctly() };
 			}
 			return { valid: true };
 		} else {
@@ -229,13 +248,15 @@ export class BibleLinkModal extends Modal {
 					const displayTextInputValid = tuple.displayTextInput.value.trim().length > 0;
 					const referenceInputValid = tuple.referenceInput.value.trim().length > 0;
 					setInputValidationState(tuple.displayTextInput, displayTextInputValid);
-					setInputValidationState(tuple.referenceInput, referenceInputValid)
+					setInputValidationState(tuple.referenceInput, referenceInputValid);
 
 					if (valid && !(displayTextInputValid && referenceInputValid)) {
 						valid = false;
 					}
 				}
-				return valid ? { valid } : { valid, message: Messages.all_input_fields_must_have_a_value() };
+				return valid
+					? { valid }
+					: { valid, message: Messages.all_input_fields_must_have_a_value() };
 			} else {
 				return { valid: false, message: Messages.links_empty() };
 			}
@@ -245,23 +266,24 @@ export class BibleLinkModal extends Modal {
 	private createLinks(): LogosLink[] {
 		if (this.modeToggle === 'auto') {
 			if (this.autoDisplayTextInput) {
-				return parseBibleReferences(this.autoDisplayTextInput.value.trim(), this.enabledLanguages)
-					.map<LogosLink>((ref) => ({
-						displayText: ref.displayText || formatBibleReferenceForLogos(ref),
-						linkPassage: formatBibleReferenceForLogos(ref),
-					}));
+				return parseBibleReferences(
+					this.autoDisplayTextInput.value.trim(),
+					this.enabledLanguages,
+				).map<LogosLink>((ref) => ({
+					displayText: ref.displayText || formatBibleReferenceForLogos(ref),
+					linkPassage: formatBibleReferenceForLogos(ref),
+				}));
 			}
 		} else {
 			return this.manualTuples
-				.map(t => ({
+				.map((t) => ({
 					displayText: t.displayTextInput.value.trim(),
-					linkPassage: t.referenceInput.value.trim()
+					linkPassage: t.referenceInput.value.trim(),
 				}))
-				.filter(t => t.displayText && t.linkPassage);
+				.filter((t) => t.displayText && t.linkPassage);
 		}
 		return [];
 	}
-
 
 	private onClickCreate() {
 		const links = this.createLinks();
@@ -281,11 +303,10 @@ export class BibleLinkModal extends Modal {
 	}
 }
 
-
 const setInputValidationState = (input: HTMLInputElement, valid: boolean) => {
 	if (valid) {
 		input.classList.remove(INPUT_INVALID_CLASS);
 	} else {
 		input.classList.add(INPUT_INVALID_CLASS);
 	}
-}
+};
