@@ -7,7 +7,7 @@ If Logos isn’t installed, the link will automatically fall back to the Logos w
 
 ## How it works
 To create a Logos link, simply select a Bible reference in the editor and right-click.
-Choose _Link with Logos_ from the context menu. A modal will appear, already pre-filled with the detected reference and link information.
+Choose _Link to Logos_ from the context menu. A modal will appear, already pre-filled with the detected reference and link information.
 You can adjust the details if needed or accept them as-is.
 When you click _Create link_, your selected text will be replaced with the appropriate Logos link(s).
 If the selection contains multiple passages or non-contiguous ranges, the plugin will generate multiple links automatically.

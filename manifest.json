@@ -1,9 +1,9 @@
 {
 	"id": "logos-link",
 	"name": "Logos Link",
-	"version": "1.0.0",
+	"version": "1.1.1",
 	"minAppVersion": "0.15.0",
-	"description": "This plugin makes using Logos together with Obsidian easier.",
+	"description": "Make linking to Logos Bible Software easy.",
 	"author": "David Troyer",
 	"isDesktopOnly": false
 }

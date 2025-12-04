@@ -1,7 +1,7 @@
 {
 	"name": "logos-link",
-	"version": "1.0.0",
-	"description": "This plugin makes using Logos together with Obsidian simpler.",
+	"version": "1.1.1",
+	"description": "Make linking to Logos Bible Software easy.",
 	"author": "David Troyer",
 	"license": "MIT",
 	"keywords": ["Logos", "Link", "Bible", "Passage"],
@@ -22,7 +22,7 @@
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
+		"esbuild": "0.25.0",
 		"jest": "^29.7.0",
 		"obsidian": "latest",
 		"prettier": "^3.7.3",
