@@ -22,8 +22,11 @@ export class LogosLinkSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl('h2', { text: Messages.settings_headline() });
-		containerEl.createEl('p', { text: Messages.settings_choose_languages_text() });
+		new Setting(containerEl)
+			.setName(Messages.settings_headline())
+			.setDesc(Messages.settings_choose_languages_text())
+			.setHeading()
+
 
 		// Create checkboxes for each available language
 		AVAILABLE_LANGUAGES.forEach((lang) => {
