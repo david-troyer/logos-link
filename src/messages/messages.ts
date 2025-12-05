@@ -153,9 +153,9 @@ export const Messages = {
 	settings_choose_languages_text: () => {
 		switch (getLanguage()) {
 			case 'de':
-				return 'Wählen Sie die Sprachen aus, die für die Erkennung von Büchern Bibelstellen verwendet werden sollen';
+				return 'Wählen Sie die Sprachen aus, die für die Erkennung von Bibelstellen verwendet werden sollen.';
 			default:
-				return 'Choose the languages, which are supported to detect the correct books in bible references';
+				return 'Choose the languages, which are supported to detect bible references.';
 		}
 	},
 };
