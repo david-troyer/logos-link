@@ -1,4 +1,4 @@
-import { AvailableLanguage, BIBLE_DATA, BibleBook } from '../data/bible-structure';
+import { AvailableLanguage, BIBLE_DATA } from '../data/bible-structure';
 
 export type BibleReference = {
 	bookId: string;
@@ -14,14 +14,18 @@ type Segment = {
 	isContinuation: boolean;
 };
 
-const BIBLE_REFERENCE_WITH_BOOK_PATTERN =
-	/^((?=.*[^\d\s:,\-–]).+?)(?:\s+(\d+(?:\s*[,:]\s*\d+)?)(?:\s*[-–]\s*(\d+(?:\s*[,:]\s*\d+)?))?)?\s*$/;
-const BIBLE_REFERENCE_WITHOUT_BOOK_PATTERN =
-	/^\s*(\d+(?:\s*[,:]\s*\d+)?)(?:\s*[-–]\s*(\d+(?:\s*[,:]\s*\d+)?))?\s*$/;
 const POINTER_PATTERN = /^\s*(\d+)\s*(?:[,:]\s*(\d+))?\s*$/;
 const DISCONNECTED_VERSES_PATTERN = /^\s*[.+]?\s*(\d+)\s*(?:[-–]\s*(\d+))?\s*$/;
 
+const NEW_BIBLE_REFERENCE_PATTERN =
+	/^(?<main>\s*;?\s*(?<book>\d*[^\d:,]+(?=\d+|$))?(?<pointer>(?<from>\d+(?:\s*[,:]\s*\d+)?)(?:\s*[-–]\s*(?<to>\d+(?:\s*[,:]\s*\d+)?))?)?\s*)(?<rest>(?:\s*[.+,]?\s*)?\d+(?:\s*[.+,\-–]\s*\d+)*\s*)?$/;
+const VERSE_ONLY_PATTERN =
+	/^(?<main>(?<v>[^\d,]+(?=\d+|$))(\s*(?<from>\d+)(?:\s*[\-–]\s*(?<to>\d+))?))(?<rest>\s*[.+,\-–]\s*\d+)*\s*$/;
+
 type Pointer = [number, number] | [number];
+
+type ParsedSegment = { bookId: string; from: Pointer | []; to: Pointer | []; displayText: string; disjointVerses?: string; };
+
 
 /**
  * formats a reference for logos link
@@ -63,78 +67,62 @@ export const formatBibleReferenceForLogos = (reference: BibleReference): string 
 export const parseBibleReferences = (
 	text: string,
 	enabledLanguages: AvailableLanguage[],
+	context?: { lastBookId: string; lastChapter?: number },
 ): BibleReference[] => {
 	const results: BibleReference[] = [];
 
 	// split into segments seperated by semicolons
 	const segments = splitIntoSegments(text);
-	let lastBookId: string | null = null;
-	for (let i = 0; i < segments.length; i++) {
-		const segment = segments[i];
-
-		// check if it is a continuation (book not part of the segment)
-		if (segment.isContinuation && lastBookId) {
-			const reference = parseSingleBibleReferenceWithoutBook(
-				segment.content,
-				segment.fullSegmentText,
-				lastBookId,
-			);
-
-			if (reference) {
-				results.push(reference);
-				continue;
-			}
-		}
-
-		// check if is not non-connected verses in passage (dot or plus after verse)
-		// Pattern: "Romans 1,10-14.18.20-26"
-		const disconnectedVersesMatch = segment.fullSegmentText.match(/^(.*?)([.+].*)$/);
-		const mainPart = disconnectedVersesMatch ? disconnectedVersesMatch[1] : null;
-		const disconnectedVerses = disconnectedVersesMatch ? disconnectedVersesMatch[2] : null;
-
-		const mainLinkParsed = parseSingleBibleReference(
-			mainPart ?? segment.fullSegmentText,
+	let lastBookId: string | null = context?.lastBookId ?? null;
+	for (const segment of segments) {
+		const parsedSegment = parseSegment(
+			segment,
 			enabledLanguages,
 			lastBookId ?? undefined,
-			'book-optional',
+			getLastChapter(results, context?.lastChapter),
 		);
 
-		if (mainLinkParsed) {
-			results.push(mainLinkParsed);
-			if (disconnectedVerses) {
-				const bookId = mainLinkParsed.bookId;
-				const chapter = mainLinkParsed.to?.chapter ?? mainLinkParsed.chapter;
-				if (chapter) {
-					results.push(...parseDisconnectedVerses(disconnectedVerses, bookId, chapter));
-				}
+		if (parsedSegment) {
+			results.push(
+				createBibleReferenceFromPointers(
+					parsedSegment.bookId,
+					parsedSegment.from,
+					parsedSegment.to,
+					parsedSegment.displayText,
+				),
+			);
+
+			const lastChapter = getLastChapter(results, context?.lastChapter);
+			if (parsedSegment.disjointVerses && lastChapter) {
+				results.push(
+					...parseDisconnectedVerses(
+						parsedSegment.disjointVerses,
+						parsedSegment.bookId,
+						lastChapter,
+					),
+				);
 			}
-			lastBookId = mainLinkParsed.bookId;
-		} else {
-			lastBookId = null;
+
+			lastBookId = parsedSegment.bookId;
 		}
 	}
 
 	return results;
 };
 
-export const parseSingleBibleReference = (
+const getLastChapter = (
+	references: BibleReference[],
+	fallback?: number | undefined,
+): number | undefined => {
+	const lastReference = references[references.length - 1];
+	return lastReference?.to?.chapter ?? lastReference?.chapter ?? fallback;
+};
+
+export const findBibleBook = (
 	text: string,
 	enabledLanguages: AvailableLanguage[],
 	lastBookId?: string,
-	mode: 'requires-book' | 'no-book' | 'book-optional' = 'book-optional',
-): BibleReference | null => {
-	const normalizeText = text.replace(';', '').trim();
-	let reference: BibleReference | null = null;
-	if (mode !== 'no-book') {
-		reference = parseSingleBibleReferenceWithBook(normalizeText, text, enabledLanguages);
-	}
-	if (mode !== 'requires-book' && !reference) {
-		reference = parseSingleBibleReferenceWithoutBook(normalizeText, text, lastBookId);
-	}
-	return reference;
-};
-
-export const findBibleBook = (text: string, enabledLanguages: AvailableLanguage[]): BibleBook | null => {
+): string | null => {
 	// normalize the text (remove unnecessary spaces)
 	const normalizedText = text.trim().replace(/\s+/g, ' ');
 
@@ -143,8 +131,15 @@ export const findBibleBook = (text: string, enabledLanguages: AvailableLanguage[
 		const bible = BIBLE_DATA[langCode];
 		for (const book of bible.books) {
 			if (book.name.test(normalizedText)) {
-				return book;
+				return book.id;
 			}
+		}
+
+		if (
+			lastBookId &&
+			(bible.chapter.test(normalizedText) || bible.verse.test(normalizedText))
+		) {
+			return lastBookId ?? null;
 		}
 	}
 
@@ -166,6 +161,64 @@ const splitIntoSegments = (text: string): Segment[] => {
 	}
 	segments.push(createSegment(text, lastIndex));
 	return segments;
+};
+
+
+const parseSegment = (
+	segment: Segment,
+	enabledLanguages: AvailableLanguage[],
+	lastBookId?: string,
+	lastChapter?: number,
+): ParsedSegment | null => {
+	const verseOnlyMatch = VERSE_ONLY_PATTERN.exec(segment.fullSegmentText);
+	if (verseOnlyMatch) {
+		const groups = verseOnlyMatch.groups;
+		const verseIndicator = groups?.['v']?.trim();
+		const from = groups?.['from'];
+		const to = groups?.['to'];
+
+		const bookId = lastBookId;
+
+		if (
+			bookId &&
+			lastChapter &&
+			verseIndicator &&
+			enabledLanguages.some((lang) => BIBLE_DATA[lang].verse.test(verseIndicator))
+		) {
+			return {
+				bookId,
+				from: from ? [lastChapter, parseInt(from, 10)] : [],
+				to: to ? [lastChapter, parseInt(to, 10)] : [],
+				displayText: groups?.['main'] ?? '',
+				disjointVerses: groups?.['rest'],
+			};
+		}
+	}
+
+	const match = NEW_BIBLE_REFERENCE_PATTERN.exec(segment.fullSegmentText);
+	if (match) {
+		const groups = match.groups;
+		const bookCandidate = groups?.['book']?.trim();
+		const from = groups?.['from'];
+		const to = groups?.['to'];
+
+		const bookId =
+			(bookCandidate
+				? findBibleBook(bookCandidate, enabledLanguages, lastBookId ?? undefined)
+				: null) ?? lastBookId;
+
+		if (bookId) {
+			return {
+				bookId,
+				from: from ? parsePointer(from) : [],
+				to: to ? parsePointer(to) : [],
+				displayText: groups?.['main'] ?? '',
+				disjointVerses: groups?.['rest'],
+			};
+		}
+	}
+
+	return null;
 };
 
 const createSegment = (
@@ -252,42 +305,6 @@ const createBibleReferenceFromPointers = (
 			: undefined,
 	displayText,
 });
-
-const parseSingleBibleReferenceWithBook = (
-	text: string,
-	displayText: string,
-	enabledLanguages: AvailableLanguage[],
-): BibleReference | null => {
-	const match = text.match(BIBLE_REFERENCE_WITH_BOOK_PATTERN);
-	if (match) {
-		const book = findBibleBook(match[1].trim(), enabledLanguages);
-		if (book) {
-			return createBibleReferenceFromPointers(
-				book.id,
-				parsePointer(match[2]),
-				parsePointer(match[3]),
-				displayText,
-			);
-		}
-	}
-	return null;
-};
-
-const parseSingleBibleReferenceWithoutBook = (
-	text: string,
-	displayText: string,
-	lastBookId?: string,
-): BibleReference | null => {
-	const match = text.match(BIBLE_REFERENCE_WITHOUT_BOOK_PATTERN);
-	return match && lastBookId
-		? createBibleReferenceFromPointers(
-				lastBookId,
-				parsePointer(match[1]),
-				parsePointer(match[2]),
-				displayText,
-			)
-		: null;
-};
 
 /**
  * Parses a "pointer". This refers to a pair of chapter + verse or only a chapter or only a verse.
