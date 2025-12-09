@@ -134,18 +134,16 @@ export const parseSingleBibleReference = (
 	return reference;
 };
 
-const findBibleBook = (text: string, enabledLanguages: AvailableLanguage[]): BibleBook | null => {
+export const findBibleBook = (text: string, enabledLanguages: AvailableLanguage[]): BibleBook | null => {
 	// normalize the text (remove unnecessary spaces)
 	const normalizedText = text.trim().replace(/\s+/g, ' ');
 
 	// search through all available languages
 	for (const langCode of enabledLanguages) {
 		const bible = BIBLE_DATA[langCode];
-		for (const section of bible.sections) {
-			for (const book of section.books) {
-				if (book.name.test(normalizedText)) {
-					return book;
-				}
+		for (const book of bible.books) {
+			if (book.name.test(normalizedText)) {
+				return book;
 			}
 		}
 	}
