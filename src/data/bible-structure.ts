@@ -1,5 +1,7 @@
 export type BibleStructure = {
 	language: string;
+	chapter: RegExp;
+	verse: RegExp;
 	books: BibleBook[];
 };
 
@@ -27,6 +29,8 @@ export type AvailableLanguage = (typeof AVAILABLE_LANGUAGES)[number]['code'];
 export const BIBLE_DATA: Record<string, BibleStructure> = {
 	de: {
 		language: 'de',
+		chapter: /^Kap(?:itel|\.)?$/i,
+		verse: /^V(?:ers|\.)?/i,
 		books: [
 			{ id: 'Gen', name: /^(?:1\.?\s*Mo(?:se|s?\.?)|Gen(?:esis|\.)?)$/i },
 			{ id: 'Ex', name: /^(?:2\.?\s*Mo(?:se|s?\.?)|Ex(?:odus|o?\.?)?)$/i },
@@ -98,6 +102,8 @@ export const BIBLE_DATA: Record<string, BibleStructure> = {
 	},
 	en: {
 		language: 'en',
+		chapter: /^Chapter?$/i,
+		verse: /^V(?:erse|\.)?/i,
 		books: [
 			{ id: 'Gen', name: /^G(?:enesis|e?n\.?)$/i },
 			{ id: 'Ex', name: /^Ex(?:odus|od?\.?|\.)?$/i },

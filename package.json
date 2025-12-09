@@ -20,7 +20,15 @@
 	},
 	"prettier": {
 		"printWidth": 100,
-		"singleQuote": true
+		"singleQuote": true,
+		"overrides": [
+			{
+				"files": ["*.test.ts", "*.spec.ts"],
+				"options": {
+					"printWidth": 180
+				}
+			}
+		]
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
