@@ -1,4 +1,4 @@
-import { formatBibleReferenceForLogos, parseBibleReferences } from './bible-parser';
+import { BibleLinkContext, formatBibleReferenceForLogos, parseBibleReferences } from './bible-parser';
 import { AvailableLanguage } from '../data/bible-structure';
 
 describe('parsing', () => {
@@ -6,8 +6,7 @@ describe('parsing', () => {
 		const SINGLE_VERSE_PARSING_SCENARIO: {
 			input: (string | string[])[];
 			expected: string;
-			lastBookId?: string;
-			lastChapter?: number;
+			context?: BibleLinkContext;
 			lang?: AvailableLanguage[];
 		}[] = [
 			{
@@ -41,52 +40,50 @@ describe('parsing', () => {
 			// chapter only
 			{
 				input: [['Kap ', 'Kap. ', 'Kapitel ', 'Chapter '], '5'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co5',
 				lang: ['de', 'en'],
 			},
 			{
 				input: ['Kap', '1', ['-', '–'], '2'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co1-2',
 				lang: ['de'],
 			},
 			{
 				input: [['Kap ', 'Kap. ', 'Kapitel ', 'Chapter '], '1', [',', ':'], '20'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co1.20',
 				lang: ['de', 'en'],
 			},
 			{
 				input: [['Kap ', 'Kap. ', 'Kapitel ', 'Chapter '], '1', [',', ':'], '20', ['-', '–'], '25'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co1.20-25',
 				lang: ['de', 'en'],
 			},
 			{
 				input: [['Kap ', 'Kap. ', 'Kapitel ', 'Chapter '], '1', [',', ':'], '20', ['-', '–'], '2', [',', ':'], '1'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co1.20-2.1',
 				lang: ['de', 'en'],
 			},
 			{
 				input: [['Kap ', 'Kap. ', 'Kapitel ', 'Chapter '], '1', ['-', '–'], '2', [',', ':'], '1'],
-				lastBookId: '1Co',
+				context: { bookId: '1Co' },
 				expected: '1Co1.1-2.1',
 				lang: ['de', 'en'],
 			},
 			// verse only
 			{
 				input: [['V.', 'Vers', 'Verse'], '2'],
-				lastBookId: '1Co',
-				lastChapter: 8,
+				context: { bookId: '1Co', chapter: 8 },
 				expected: '1Co8.2',
 				lang: ['de', 'en'],
 			},
 			{
 				input: [['V.', 'Vers', 'Verse'], '2', ['-', '–'], '5'],
-				lastBookId: '1Co',
-				lastChapter: 8,
+				context: { bookId: '1Co', chapter: 8 },
 				expected: '1Co8.2-5',
 				lang: ['de', 'en'],
 			},
@@ -199,10 +196,10 @@ describe('parsing', () => {
 					const results = parseBibleReferences(
 						variation,
 						['de', 'en'],
-						scenario.lastBookId
+						scenario.context?.bookId
 							? {
-									lastBookId: scenario.lastBookId,
-									lastChapter: scenario.lastChapter,
+									bookId: scenario.context.bookId,
+									chapter: scenario.context.chapter,
 								}
 							: undefined,
 					);

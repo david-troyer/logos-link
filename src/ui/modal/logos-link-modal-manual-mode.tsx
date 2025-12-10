@@ -1,7 +1,7 @@
 import React from 'react';
 import { ManualLogosLinkTuple } from './manual-logos-link-tuple';
 import { Messages } from '../../messages/messages';
-import { ManualTuple } from '../bible-link-modal-react';
+import { ManualTuple } from './bible-link-modal-react';
 
 export type LogosLinkModalManualModeProps = {
 	manualTuples: ManualTuple[];

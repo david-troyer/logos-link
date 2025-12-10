@@ -1,6 +1,6 @@
 import { App, Modal } from 'obsidian';
-import { AvailableLanguage } from '../data/bible-structure';
-import { Messages } from '../messages/messages';
+import { AvailableLanguage } from '../../data/bible-structure';
+import { Messages } from '../../messages/messages';
 import { BibleLinkModalComponent, type LogosLink } from './bible-link-modal-react';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
@@ -31,6 +31,10 @@ export class BibleLinkModal extends Modal {
 		this.reactRoot.render(
 			React.createElement(BibleLinkModalComponent, {
 				initialText: this.initialText,
+				context: this.app.loadLocalStorage('link-context')?.toString(),
+				onContextChanged: (value) => {
+					this.app.saveLocalStorage('link-context', value);
+				},
 				enabledLanguages: this.enabledLanguages,
 				onSubmit: (links: LogosLink[]) => {
 					this.onSubmit(links);

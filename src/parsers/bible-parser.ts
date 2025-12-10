@@ -16,16 +16,21 @@ type Segment = {
 
 const POINTER_PATTERN = /^\s*(\d+)\s*(?:[,:]\s*(\d+))?\s*$/;
 const DISCONNECTED_VERSES_PATTERN = /^\s*[.+]?\s*(\d+)\s*(?:[-–]\s*(\d+))?\s*$/;
-
 const NEW_BIBLE_REFERENCE_PATTERN =
 	/^(?<main>\s*;?\s*(?<book>\d*[^\d:,]+(?=\d+|$))?(?<pointer>(?<from>\d+(?:\s*[,:]\s*\d+)?)(?:\s*[-–]\s*(?<to>\d+(?:\s*[,:]\s*\d+)?))?)?\s*)(?<rest>(?:\s*[.+,]?\s*)?\d+(?:\s*[.+,\-–]\s*\d+)*\s*)?$/;
 const VERSE_ONLY_PATTERN =
-	/^(?<main>(?<v>[^\d,]+(?=\d+|$))(\s*(?<from>\d+)(?:\s*[\-–]\s*(?<to>\d+))?))(?<rest>\s*[.+,\-–]\s*\d+)*\s*$/;
+	/^(?<main>(?<v>[^\d,]+(?=\d+|$))(\s*(?<from>\d+)(?:\s*[-–]\s*(?<to>\d+))?))(?<rest>\s*[.+,\-–]\s*\d+)*\s*$/;
+const CONTEXT_PATTERN = /^\s*(?<book>\d*[^\d:,]+(?=\d+|$))(?:\s*(?<chapter>\d+))?\s*$/;
 
 type Pointer = [number, number] | [number];
 
-type ParsedSegment = { bookId: string; from: Pointer | []; to: Pointer | []; displayText: string; disjointVerses?: string; };
-
+type ParsedSegment = {
+	bookId: string;
+	from: Pointer | [];
+	to: Pointer | [];
+	displayText: string;
+	disjointVerses?: string;
+};
 
 /**
  * formats a reference for logos link
@@ -67,19 +72,19 @@ export const formatBibleReferenceForLogos = (reference: BibleReference): string 
 export const parseBibleReferences = (
 	text: string,
 	enabledLanguages: AvailableLanguage[],
-	context?: { lastBookId: string; lastChapter?: number },
+	context?: BibleLinkContext | null,
 ): BibleReference[] => {
 	const results: BibleReference[] = [];
 
 	// split into segments seperated by semicolons
 	const segments = splitIntoSegments(text);
-	let lastBookId: string | null = context?.lastBookId ?? null;
+	let lastBookId: string | null = context?.bookId ?? null;
 	for (const segment of segments) {
 		const parsedSegment = parseSegment(
 			segment,
 			enabledLanguages,
 			lastBookId ?? undefined,
-			getLastChapter(results, context?.lastChapter),
+			getLastChapter(results, context?.chapter),
 		);
 
 		if (parsedSegment) {
@@ -92,7 +97,7 @@ export const parseBibleReferences = (
 				),
 			);
 
-			const lastChapter = getLastChapter(results, context?.lastChapter);
+			const lastChapter = getLastChapter(results, context?.chapter);
 			if (parsedSegment.disjointVerses && lastChapter) {
 				results.push(
 					...parseDisconnectedVerses(
@@ -121,7 +126,7 @@ const getLastChapter = (
 export const findBibleBook = (
 	text: string,
 	enabledLanguages: AvailableLanguage[],
-	lastBookId?: string,
+	lastBookId?: string | null,
 ): string | null => {
 	// normalize the text (remove unnecessary spaces)
 	const normalizedText = text.trim().replace(/\s+/g, ' ');
@@ -139,7 +144,7 @@ export const findBibleBook = (
 			lastBookId &&
 			(bible.chapter.test(normalizedText) || bible.verse.test(normalizedText))
 		) {
-			return lastBookId ?? null;
+			return lastBookId;
 		}
 	}
 
@@ -163,7 +168,6 @@ const splitIntoSegments = (text: string): Segment[] => {
 	return segments;
 };
 
-
 const parseSegment = (
 	segment: Segment,
 	enabledLanguages: AvailableLanguage[],
@@ -179,19 +183,14 @@ const parseSegment = (
 
 		const bookId = lastBookId;
 
-		if (
-			bookId &&
-			lastChapter &&
-			verseIndicator &&
-			enabledLanguages.some((lang) => BIBLE_DATA[lang].verse.test(verseIndicator))
-		) {
-			return {
+		if (verseIndicator && enabledLanguages.some((lang) => BIBLE_DATA[lang].verse.test(verseIndicator))) {
+			return bookId && lastChapter ? {
 				bookId,
 				from: from ? [lastChapter, parseInt(from, 10)] : [],
 				to: to ? [lastChapter, parseInt(to, 10)] : [],
 				displayText: groups?.['main'] ?? '',
 				disjointVerses: groups?.['rest'],
-			};
+			} : null;
 		}
 	}
 
@@ -202,10 +201,9 @@ const parseSegment = (
 		const from = groups?.['from'];
 		const to = groups?.['to'];
 
-		const bookId =
-			(bookCandidate
-				? findBibleBook(bookCandidate, enabledLanguages, lastBookId ?? undefined)
-				: null) ?? lastBookId;
+		const bookId = bookCandidate
+			? findBibleBook(bookCandidate, enabledLanguages, lastBookId ?? undefined)
+			: lastBookId;
 
 		if (bookId) {
 			return {
@@ -325,4 +323,21 @@ const parsePointer = (pointerText: string | undefined | null): Pointer | [] => {
 		return second ? [first, second] : [first];
 	}
 	return [];
+};
+
+export type BibleLinkContext = { bookId: string; chapter?: number };
+export const parseBibleLinkContext = (
+	text: string,
+	enabledLanguages: AvailableLanguage[],
+): BibleLinkContext | null => {
+	const match = CONTEXT_PATTERN.exec(text);
+	if (match) {
+		const bookCandidate = match.groups?.['book'];
+		const chapter = match.groups?.['chapter'];
+		const bookId = bookCandidate ? findBibleBook(bookCandidate.trim(), enabledLanguages) : null;
+		if (bookId) {
+			return { bookId, chapter: chapter ? parseInt(chapter, 10) : undefined };
+		}
+	}
+	return null;
 };

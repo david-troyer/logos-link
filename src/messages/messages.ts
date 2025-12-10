@@ -61,12 +61,36 @@ export const Messages = {
 				return 'Bible reference';
 		}
 	},
-	passage_input_manual_name: () => {
+	display_text: () => {
 		switch (getLanguage()) {
 			case 'de':
 				return 'Anzeigetext';
 			default:
 				return 'Display text';
+		}
+	},
+	context_input_name: () => {
+		switch (getLanguage()) {
+			case 'de':
+				return 'Kontext der Bibelstelle';
+			default:
+				return 'Context of the bible reference';
+		}
+	},
+	context_input_description: () => {
+		switch (getLanguage()) {
+			case 'de':
+				return 'Der Kontext ergänzt unvollständige Bibelstellen';
+			default:
+				return 'The context supplements incomplete bible references';
+		}
+	},
+	context_input_placeholder: () => {
+		switch (getLanguage()) {
+			case 'de':
+				return 'Kein Kontext angegeben';
+			default:
+				return 'No context provided';
 		}
 	},
 	passage_input_auto_placeholder: () => {

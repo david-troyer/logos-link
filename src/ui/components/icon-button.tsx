@@ -17,5 +17,5 @@ export const IconButton = (props: IconButtonProps) => {
 		}
 	}, [iconName]);
 
-	return <button ref={ref} className={className} onClick={onClick}></button>;
+	return <button ref={ref} className={className} onClick={onClick} />;
 };

@@ -1,4 +1,4 @@
-import { LogosLink } from '../ui/bible-link-modal';
+import { LogosLink } from '../ui/modal/bible-link-modal';
 
 export const logosLinksToMarkdown = (links: LogosLink[]): string =>
 	links.map(logosLinkToMarkdown).join('');
