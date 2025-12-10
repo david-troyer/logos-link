@@ -1,10 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import { formatBibleReferenceForLogos, parseBibleReferences } from '../parsers/bible-parser';
-import { AvailableLanguage } from '../data/bible-structure';
-import { Messages } from '../messages/messages';
-import { LogosLinkModalManualMode } from './modal/logos-link-modal-manual-mode';
-import { LogosLinkModalAutoMode } from './modal/logos-link-modal-auto-mode';
-import { ButtonGroup } from './button-group';
+import {
+	formatBibleReferenceForLogos,
+	parseBibleLinkContext,
+	parseBibleReferences,
+} from '../../parsers/bible-parser';
+import { AvailableLanguage } from '../../data/bible-structure';
+import { Messages } from '../../messages/messages';
+import { LogosLinkModalManualMode } from './logos-link-modal-manual-mode';
+import { LogosLinkModalAutoMode } from './logos-link-modal-auto-mode';
+import { ButtonGroup } from '../components/button-group';
 
 export interface LogosLink {
 	displayText: string;
@@ -19,16 +23,34 @@ export interface ManualTuple {
 
 interface BibleLinkModalProps {
 	initialText: string;
+	context?: string;
+	onContextChanged?: (value: string) => void;
 	enabledLanguages: AvailableLanguage[];
 	onSubmit: (links: LogosLink[]) => void;
 	onCancel: () => void;
 }
 
 export const BibleLinkModalComponent = (props: BibleLinkModalProps) => {
-	const { initialText, enabledLanguages, onSubmit, onCancel } = props;
+	const {
+		initialText,
+		context: providedContext,
+		onContextChanged: reportContextChanged,
+		enabledLanguages,
+		onSubmit,
+		onCancel,
+	} = props;
 
 	const [mode, setMode] = useState<'auto' | 'manual'>('auto');
 	const [autoDisplayText, setAutoDisplayText] = useState(initialText);
+	const [linkContextValue, setLocalLinkContextValue] = useState(providedContext ?? '');
+
+	const setLinkContextValue = useCallback((value: string) => {
+		setLocalLinkContextValue(value);
+		if (reportContextChanged) {
+			reportContextChanged(value);
+		}
+	}, [reportContextChanged]);
+
 	const {
 		manualTuples,
 		setManualTuples,
@@ -38,27 +60,33 @@ export const BibleLinkModalComponent = (props: BibleLinkModalProps) => {
 	} = useManualTupleList();
 
 	const validationState =
-		mode === 'auto' ? validateAuto(autoDisplayText, enabledLanguages) : validateManual(manualTuples);
+		mode === 'auto'
+			? validateAuto(autoDisplayText, linkContextValue, enabledLanguages)
+			: validateManual(manualTuples);
 
 	const handleModeChange = useCallback(
 		(newMode: 'auto' | 'manual') => {
 			setMode((previousMode) => {
 				if (previousMode === 'auto' && newMode === 'manual') {
-					const parsed = parseBibleReferences(autoDisplayText, enabledLanguages);
-					if (parsed.length > 0) {
+					const validationResult = validateAuto(
+						autoDisplayText,
+						linkContextValue,
+						enabledLanguages,
+					);
+					if (validationResult.valid && validationResult.links.length > 0) {
 						setManualTuples(
-							parsed.map((ref) =>
-								createTuple(ref.displayText, formatBibleReferenceForLogos(ref)),
+							validationResult.links.map((ref) =>
+								createTuple(ref.displayText, ref.linkPassage),
 							),
 						);
 					} else {
-						setManualTuples([createTuple('', '')]);
+						setManualTuples([createTuple(autoDisplayText, '')]);
 					}
 				}
 				return newMode;
 			});
 		},
-		[mode, autoDisplayText, enabledLanguages],
+		[autoDisplayText, linkContextValue, enabledLanguages],
 	);
 
 	const handleCreate = useCallback(() => {
@@ -79,6 +107,8 @@ export const BibleLinkModalComponent = (props: BibleLinkModalProps) => {
 					<LogosLinkModalAutoMode
 						value={autoDisplayText}
 						onChange={setAutoDisplayText}
+						context={linkContextValue}
+						onContextChange={setLinkContextValue}
 						enabledLanguages={enabledLanguages}
 					/>
 				) : (
@@ -109,8 +139,13 @@ export type ValidationResult =
 	| { valid: true; links: LogosLink[] }
 	| { valid: false; message: string };
 
-const validateAuto = (value: string, enabledLanguage: AvailableLanguage[]): ValidationResult => {
-	const parsed = parseBibleReferences(value, enabledLanguage);
+const validateAuto = (
+	displayText: string,
+	contextInput: string,
+	enabledLanguages: AvailableLanguage[],
+): ValidationResult => {
+	const parsedContext = parseBibleLinkContext(contextInput, enabledLanguages);
+	const parsed = parseBibleReferences(displayText, enabledLanguages, parsedContext);
 	if (parsed.length > 0) {
 		return {
 			valid: true,

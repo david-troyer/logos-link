@@ -1,5 +1,5 @@
 import { Editor, Plugin } from 'obsidian';
-import { BibleLinkModal, LogosLink } from './src/ui/bible-link-modal';
+import { BibleLinkModal, LogosLink } from './src/ui/modal/bible-link-modal';
 import { DEFAULT_SETTINGS, LogosLinkSettings, LogosLinkSettingTab } from './src/ui/settings';
 import { Messages } from './src/messages/messages';
 import { logosLinksToMarkdown } from './src/parsers/bible-reference-markdown-utils';

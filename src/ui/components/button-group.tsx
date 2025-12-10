@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { toArray } from './utils';
+import { toArray } from '../utils';
 
 export type ButtonGroupInternalProps = {
 	value: string;

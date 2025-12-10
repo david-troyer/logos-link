@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { Setting } from 'obsidian';
-import { clsx, isDefined } from './utils';
+import { clsx, isDefined } from '../utils';
 
 export type SettingInputProps = {
 	name: string;
-	desc?: string;
 	value: string;
-	placeholder: string;
-	onChange: (value: string) => void;
+	onChange?: (value: string) => void;
+	description?: string;
+	placeholder?: string;
 	disabled?: boolean;
 	readOnly?: boolean;
 	className?: string;
@@ -19,7 +19,7 @@ const INPUT_INVALID_CLASS = 'input-error';
 export const SettingInput = (props: SettingInputProps) => {
 	const {
 		name,
-		desc,
+		description,
 		value,
 		placeholder,
 		onChange,
@@ -34,23 +34,21 @@ export const SettingInput = (props: SettingInputProps) => {
 
 	useEffect(() => {
 		if (containerRef.current && !settingRef.current) {
-			const setting = new Setting(containerRef.current).setName(name);
-			if (desc) {
-				setting.setDesc(desc);
-			}
-			setting.addText((text) => {
-				const input = text.inputEl;
-				input.value = value;
-				input.placeholder = placeholder;
-				if (disabled !== undefined) input.disabled = disabled;
-				if (readOnly !== undefined) input.readOnly = readOnly;
-				input.oninput = (e) => {
-					onChange((e.target as HTMLInputElement).value);
-				};
-			});
-			settingRef.current = setting;
+			settingRef.current = new Setting(containerRef.current)
+				.setName(name)
+				.setDesc(description ?? '')
+				.addText((text) => {
+					const input = text.inputEl;
+					input.value = value;
+					input.placeholder = placeholder ?? '';
+					input.disabled = disabled ?? false;
+					input.readOnly = readOnly ?? false;
+					input.oninput = (e) => {
+						onChange?.((e.target as HTMLInputElement).value);
+					};
+				});
 		}
-	}, [name, desc, placeholder, disabled, readOnly, onChange]);
+	}, [name, description, placeholder, disabled, readOnly, onChange]);
 
 	// Update input value when it changes
 	useEffect(() => {
